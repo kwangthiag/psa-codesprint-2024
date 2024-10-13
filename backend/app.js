@@ -1,9 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
+const path = require('path');  // Import the path module
+
 const { extractTextFromPdf } = require('./services/pdfService');
 const { parsePdfContentToSections } = require('./services/gptService');
 const { uploadMentee } = require('./services/uploadMentee');
+const { updateTables } = require('./services/updateTables');
 // const { saveParsedDataToSupabase } = require('./services/supabaseService');
 // const { matchMenteeToMentor } = require('./services/matchingService'); // Assuming you have a matching service
 
@@ -100,6 +103,18 @@ app.post('/upload/mentee', upload.array('files'), async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+app.get('/update-tables', async (req, res) => {
+  const jsonFilePath = path.resolve(__dirname, 'mentee_mentor_pairs.json');  // Path to your JSON file
+
+  try {
+    await updateTables(jsonFilePath);  // Call the function with the file path
+    res.status(200).send('Tables updated successfully');
+  } catch (error) {
+    res.status(500).send(`Error updating tables: ${error.message}`);
+  }
+});
+
 app.get('/', (req, res) => {
     res.send('Server is running!');
   });
